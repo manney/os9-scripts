@@ -1,0 +1,338 @@
+PROCEDURE get_key
+  (* Allows the user find out the ASCII character code is associated with
+  (* a key stroke.  Press 'Q' to quit. If you're aware of any that are missing
+  (* or how to fix the trouble keystrokes, please either let me know or submit
+  (* a pull request.
+  (*
+  (* These keystrokes still cause known issues: C-BREAK, C-0, C-2
+  (*
+  (* KEY: 'C-x' is short for CTRL-x,
+  (*      'M-x' is ALT-x, and
+  (*      'S-x' is SHIFT-x
+  (*
+  (* :return NIL:
+
+  DIM char: STRING[1]
+  DIM res: STRING
+
+  SHELL "tmode eko=00 int=00 qut=00 psc=00"
+
+  REPEAT
+    char = ""
+    res = ""
+    WHILE char = "" DO
+      RUN inkey(char)
+    ENDWHILE
+
+    PRINT ASC(char);
+    PRINT " - ";
+
+    RUN lookup_char(char, res)
+
+    PRINT res
+  UNTIL char = "Q"
+
+  SHELL "tmode eko=01 int=03 qut=05 psc=17"
+
+  END
+
+PROCEDURE lookup_char
+  (* Does the dirty work of looking up the character passed as a parameter.
+  (* This will basically get the ASCII value of the character then try to find
+  (* it in the DATA statements.  If found, then it will assign the DATA
+  (* statement's STRING as the return value.  If the STRING is nothing, then it
+  (* will use "UNKNOWN" as a placeholder.
+  (*
+  (* These DATA statements probably could have been thrown in to an array then
+  (* returned back to the calling PROCEDURE for speed's sake, but I'm pretty
+  (* happy with this.  There seems to be a minimal hesitation while it's
+  (* looking up the ASCII value.  (At least on VCC.)  If there's something that
+  (* can be done to speed this up, please let me know or submit a pull request.
+  (*
+  (* :param char STRING[1]: The character to lookup
+  (* :param res STRING:
+  (*    The key description of the character;
+  (*    This is only passed for assignment
+  (* :return STRING:
+  (*    The key description of the character (through the 'res' parameter)
+
+  PARAM char: STRING[1]
+  PARAM res: STRING
+  DIM ascii: BYTE
+  DIM total: INTEGER
+  DIM count: INTEGER
+  DIM code: BYTE
+
+  total = 256
+  ascii = ASC(char)
+  count = 1
+
+  RESTORE
+  REPEAT
+    READ code, res
+    IF code = ascii THEN
+      IF res = "" THEN
+        res = "UNKNOWN"
+      ENDIF
+    ENDIF
+    count = count + 1
+  UNTIL count > total OR code = ascii
+
+  DATA 000, "NIL"
+  DATA 001, "C-a"
+  DATA 002, "C-b"
+  DATA 003, "C-c"
+  DATA 004, "C-d"
+  DATA 005, "C-e, BREAK"
+  DATA 006, "C-f"
+  DATA 007, "C-g"
+  DATA 008, "C-h, LEFT"
+  DATA 009, "C-i, RIGHT"
+  DATA 010, "C-j, DOWN"
+  DATA 011, "C-k"
+  DATA 012, "C-l, UP"
+  DATA 013, "C-m, ENTER"
+  DATA 014, "C-n"
+  DATA 015, "C-o"
+  DATA 016, "C-p, C-LEFT"
+  DATA 017, "C-q, C-RIGHT"
+  DATA 018, "C-r, C-DOWN"
+  DATA 019, "C-s, C-UP"
+  DATA 020, "C-t"
+  DATA 021, "C-u"
+  DATA 022, "C-v"
+  DATA 023, "C-w"
+  DATA 024, "C-x, S-LEFT"
+  DATA 025, "C-y, S-RIGHT"
+  DATA 026, "C-z, S-DOWN"
+  DATA 027, ""
+  DATA 028, "S-UP"
+  DATA 029, "C-4"
+  DATA 030, "C-5"
+  DATA 031, "C-6"
+  DATA 032, "SPACE"
+  DATA 033, "!"
+  DATA 034, chr$(34)
+  DATA 035, "#"
+  DATA 036, "$"
+  DATA 037, "%"
+  DATA 038, "&"
+  DATA 039, "'"
+  DATA 040, "("
+  DATA 041, ")"
+  DATA 042, "*"
+  DATA 043, "+"
+  DATA 044, ","
+  DATA 045, "-"
+  DATA 046, "."
+  DATA 047, "/"
+  DATA 048, "0"
+  DATA 049, "1"
+  DATA 050, "2"
+  DATA 051, "3"
+  DATA 052, "4"
+  DATA 053, "5"
+  DATA 054, "6"
+  DATA 055, "7"
+  DATA 056, "8"
+  DATA 057, "9"
+  DATA 058, ":"
+  DATA 059, ";"
+  DATA 060, "<"
+  DATA 061, "="
+  DATA 062, ">"
+  DATA 063, "?"
+  DATA 064, "@"
+  DATA 065, "A"
+  DATA 066, "B"
+  DATA 067, "C"
+  DATA 068, "D"
+  DATA 069, "E"
+  DATA 070, "F"
+  DATA 071, "G"
+  DATA 072, "H"
+  DATA 073, "I"
+  DATA 074, "J"
+  DATA 075, "K"
+  DATA 076, "L"
+  DATA 077, "M"
+  DATA 078, "N"
+  DATA 079, "O"
+  DATA 080, "P"
+  DATA 081, "Q"
+  DATA 082, "R"
+  DATA 083, "S"
+  DATA 084, "T"
+  DATA 085, "U"
+  DATA 086, "V"
+  DATA 087, "W"
+  DATA 088, "X"
+  DATA 089, "Y"
+  DATA 090, "Z"
+  DATA 091, "[, C-8"
+  DATA 092, "\"
+  DATA 093, "], C-9"
+  DATA 094, "^, C-7"
+  DATA 095, ""
+  DATA 096, ""
+  DATA 097, "a"
+  DATA 098, "b"
+  DATA 099, "c"
+  DATA 100, "d"
+  DATA 101, "e"
+  DATA 102, "f"
+  DATA 103, "g"
+  DATA 104, "h"
+  DATA 105, "i"
+  DATA 106, "j"
+  DATA 107, "k"
+  DATA 108, "l"
+  DATA 109, "m"
+  DATA 110, "n"
+  DATA 111, "o"
+  DATA 112, "p"
+  DATA 113, "q"
+  DATA 114, "r"
+  DATA 115, "s"
+  DATA 116, "t"
+  DATA 117, "u"
+  DATA 118, "v"
+  DATA 119, "w"
+  DATA 120, "x"
+  DATA 121, "y"
+  DATA 122, "z"
+  DATA 123, "{"
+  DATA 124, "|, C-1"
+  DATA 125, "}"
+  DATA 126, "~, C-3"
+  DATA 127, ""
+  DATA 128, ""
+  DATA 129, ""
+  DATA 130, ""
+  DATA 131, ""
+  DATA 132, ""
+  DATA 133, "M-BREAK"
+  DATA 134, ""
+  DATA 135, ""
+  DATA 136, "M-LEFT"
+  DATA 137, "M-RIGHT"
+  DATA 138, "M-DOWN"
+  DATA 139, ""
+  DATA 140, "M-UP"
+  DATA 141, ""
+  DATA 142, ""
+  DATA 143, ""
+  DATA 144, ""
+  DATA 145, ""
+  DATA 146, ""
+  DATA 147, ""
+  DATA 148, ""
+  DATA 149, ""
+  DATA 150, ""
+  DATA 151, ""
+  DATA 152, "M-S-LEFT"
+  DATA 153, "M-S-RIGHT"
+  DATA 154, "M-S-DOWN"
+  DATA 155, ""
+  DATA 156, "M-S-UP"
+  DATA 157, ""
+  DATA 158, ""
+  DATA 159, ""
+  DATA 160, "M-S-SPACE"
+  DATA 161, ""
+  DATA 162, ""
+  DATA 163, ""
+  DATA 164, ""
+  DATA 165, ""
+  DATA 166, ""
+  DATA 167, ""
+  DATA 168, ""
+  DATA 169, ""
+  DATA 170, ""
+  DATA 171, ""
+  DATA 172, "M-,"
+  DATA 173, "M--"
+  DATA 174, "M-."
+  DATA 175, "M-/"
+  DATA 176, "M-0"
+  DATA 177, "M-1"
+  DATA 178, "M-2"
+  DATA 179, "M-3, F1"
+  DATA 180, "M-4, F2"
+  DATA 181, "M-5, C-F1"
+  DATA 182, "M-6, C-F2"
+  DATA 183, "M-7"
+  DATA 184, "M-8"
+  DATA 185, "M-9"
+  DATA 186, ""
+  DATA 187, ""
+  DATA 188, "M-<"
+  DATA 189, "M-="
+  DATA 190, "M->"
+  DATA 191, ""
+  DATA 192, ""
+  DATA 193, ""
+  DATA 194, ""
+  DATA 195, ""
+  DATA 196, ""
+  DATA 197, ""
+  DATA 198, ""
+  DATA 199, ""
+  DATA 200, ""
+  DATA 201, ""
+  DATA 202, ""
+  DATA 203, ""
+  DATA 204, ""
+  DATA 205, ""
+  DATA 206, ""
+  DATA 207, ""
+  DATA 208, ""
+  DATA 209, ""
+  DATA 210, ""
+  DATA 211, ""
+  DATA 212, ""
+  DATA 213, ""
+  DATA 214, ""
+  DATA 215, ""
+  DATA 216, ""
+  DATA 217, ""
+  DATA 218, ""
+  DATA 219, "M-["
+  DATA 220, "M-\"
+  DATA 221, "M-]"
+  DATA 222, ""
+  DATA 223, ""
+  DATA 224, ""
+  DATA 225, "M-a"
+  DATA 226, "M-b"
+  DATA 227, "M-c"
+  DATA 228, "M-d"
+  DATA 229, "M-e"
+  DATA 230, "M-f"
+  DATA 231, "M-g"
+  DATA 232, "M-h"
+  DATA 233, "M-i"
+  DATA 234, "M-j"
+  DATA 235, "M-k"
+  DATA 236, "M-l"
+  DATA 237, "M-m"
+  DATA 238, "M-n"
+  DATA 239, "M-o"
+  DATA 240, "M-p"
+  DATA 241, "M-q"
+  DATA 242, "M-r"
+  DATA 243, "M-s"
+  DATA 244, "M-t"
+  DATA 245, "M-u"
+  DATA 246, "M-v"
+  DATA 247, "M-w"
+  DATA 248, "M-x"
+  DATA 249, "M-y"
+  DATA 250, "M-z"
+  DATA 251, ""
+  DATA 252, ""
+  DATA 253, ""
+  DATA 254, ""
+  DATA 255, ""
+
+  END
